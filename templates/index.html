@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direkt - Jalandhar</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist+Mono&display=swap');
+
+        body {
+            font-family: 'Geist Mono', monospace;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #ffffff;
+            color: #333;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+        
+        .content {
+            display: flex;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        .map-container {
+            flex: 3;
+            position: relative;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            height: 70vh;
+        }
+        
+        .controls {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .map {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .node {
+            cursor: pointer;
+            transition: transform 0.2s, fill 0.2s;
+        }
+        
+        .node:hover {
+            transform: scale(1.2);
+            fill: #555;
+        }
+        
+        .node.start {
+            fill: #28a745;
+        }
+        
+        .node.end {
+            fill: #dc3545;
+        }
+        
+        .road {
+            stroke: #666;
+            stroke-width: 2;
+            transition: stroke-width 0.3s;
+        }
+        
+        .road.low {
+            stroke: #28a745;
+            stroke-width: 3;
+        }
+        
+        .road.medium {
+            stroke: #ffc107;
+            stroke-width: 3;
+        }
+        
+        .road.high {
+            stroke: #dc3545;
+            stroke-width: 3;
+        }
+        
+        .road.highlighted {
+            stroke: #007bff;
+            stroke-width: 4;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .intersection-label {
+            font-size: 11px;
+            fill: #333;
+            user-select: none;
+            pointer-events: none;
+        }
+        
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            font-size: 12px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 6px;
+        }
+        
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            margin-left: 8px;
+            border-radius: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: 'Geist Mono', monospace;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        .destination-text {
+            padding: 10px;
+            font-size: 14px;
+            color: #333;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Geist Mono', monospace;
+            font-size: 14px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        @keyframes pulse {
+            0% { stroke-width: 4; stroke-opacity: 0.7; }
+            50% { stroke-width: 5; stroke-opacity: 1; }
+            100% { stroke-width: 4; stroke-opacity: 0.7; }
+        }
+        
+        .alert {
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #555;
+        }
+        
+        .spinner {
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .map-container {
+                height: 50vh;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .intersection-label {
+                font-size: 9px;
+            }
+            
+            .legend {
+                font-size: 11px;
+                padding: 8px;
+            }
+            
+            .legend-color {
+                width: 12px;
+                height: 12px;
+            }
+            
+            select, .destination-text, button {
+                font-size: 13px;
+                padding: 8px;
+            }
+            
+            .stat-item {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Direkt</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="content">
+            <div class="map-container">
+                <div class="map" id="map-area">
+                    <svg id="road-network" viewBox="0 0 1000 800"></svg>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div>Start / Low Traffic</div>
+                            <div class="legend-color" style="background-color: #28a745;"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div>Medium Traffic</div>
+                            <div class="legend-color" style="background-color: #ffc107;"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div>End / High Traffic</div>
+                            <div class="legend-color" style="background-color: #dc3545;"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div>Optimal Route</div>
+                            <div class="legend-color" style="background-color: #007bff;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="form-group">
+                    <label for="start-point">Starting Point:</label>
+                    <select id="start-point">
+                        <option value="">Select starting point</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Destination:</label>
+                    <div class="destination-text">Jalandhar Civil Hospital</div>
+                    <input type="hidden" id="end-point" value="1">
+                </div>
+                
+                <button type="button" id="find-route">Find Fastest Route</button>
+                <button type="button" id="add-traffic">Add Random Traffic</button>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div>Calculating optimal route...</div>
+                </div>
+                
+                <div class="alert" id="alert-box">
+                    Please select a starting point different from Jalandhar Civil Hospital.
+                </div>
+                
+                <div class="stats">
+                    <h3>Route Information</h3>
+                    <div class="stat-item">
+                        <div>Distance:</div>
+                        <div class="value" id="distance">-- km</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Est. Time:</div>
+                        <div class="value" id="time">-- min</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Intersections:</div>
+                        <div class="value" id="intersections">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const nodes = {{ nodes|safe }};
+        const edges = {{ edges|safe }};
+        let currentEdges = edges;
+
+        function initializeMap() {
+            const svg = document.getElementById('road-network');
+            svg.innerHTML = '';
+            
+            // Store the current selected start point before reinitializing
+            const startPointSelect = document.getElementById('start-point');
+            const currentStartId = startPointSelect.value || ''; // Default to empty if none selected
+            
+            currentEdges.forEach(edge => {
+                const fromNode = nodes.find(node => node.id === edge.from);
+                const toNode = nodes.find(node => node.id === edge.to);
+                
+                const road = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                road.setAttribute('x1', fromNode.x);
+                road.setAttribute('y1', fromNode.y);
+                road.setAttribute('x2', toNode.x);
+                road.setAttribute('y2', toNode.y);
+                road.setAttribute('class', `road ${edge.traffic || ''}`);
+                road.setAttribute('data-from', edge.from);
+                road.setAttribute('data-to', edge.to);
+                svg.appendChild(road);
+            });
+            
+            nodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', node.type === 'hospital' ? 10 : 8);
+                circle.setAttribute('fill', node.type === 'hospital' ? '#999' : '#000');
+                circle.setAttribute('class', 'node');
+                circle.setAttribute('data-id', node.id);
+                circle.addEventListener('click', () => selectNode(node.id));
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y - 15);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('class', 'intersection-label');
+                text.textContent = node.name;
+                svg.appendChild(text);
+            });
+            
+            // Repopulate the select options without resetting the value
+            startPointSelect.innerHTML = '<option value="">Select starting point</option>';
+            nodes.forEach(node => {
+                if (node.id !== 1) {
+                    const startOption = document.createElement('option');
+                    startOption.value = node.id;
+                    startOption.textContent = node.name;
+                    startPointSelect.appendChild(startOption);
+                }
+            });
+            
+            // Restore the previously selected start point
+            startPointSelect.value = currentStartId || ''; // Restore or keep empty
+        }
+
+        function selectNode(id) {
+            const startPointSelect = document.getElementById('start-point');
+            if (id !== 1) {
+                startPointSelect.value = id;
+                updateNodeDisplay();
+            }
+        }
+
+        function updateNodeDisplay() {
+            const startId = parseInt(document.getElementById('start-point').value);
+            const endId = 1;
+            
+            document.querySelectorAll('.node').forEach(node => {
+                node.setAttribute('fill', nodes.find(n => n.id === parseInt(node.getAttribute('data-id'))).type === 'hospital' ? '#999' : '#000');
+                node.classList.remove('start', 'end');
+            });
+            
+            if (startId) {
+                const startNode = document.querySelector(`.node[data-id="${startId}"]`);
+                if (startNode) {
+                    startNode.setAttribute('fill', '#28a745');
+                    startNode.classList.add('start');
+                }
+            }
+            
+            const endNode = document.querySelector('.node[data-id="1"]');
+            if (endNode) {
+                endNode.setAttribute('fill', '#dc3545');
+                endNode.classList.add('end');
+            }
+        }
+
+        function resetMap() {
+            document.querySelectorAll('.road').forEach(road => {
+                road.classList.remove('highlighted');
+            });
+            document.getElementById('distance').textContent = '-- km';
+            document.getElementById('time').textContent = '-- min';
+            document.getElementById('intersections').textContent = '--';
+            document.getElementById('alert-box').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function highlightPath(path) {
+            resetMap();
+            if (!path || path.length <= 1) {
+                document.getElementById('alert-box').style.display = 'block';
+                return false;
+            }
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                const from = path[i];
+                const to = path[i + 1];
+                const road = document.querySelector(`.road[data-from="${from}"][data-to="${to}"], .road[data-from="${to}"][data-to="${from}"]`);
+                if (road) {
+                    road.classList.add('highlighted');
+                }
+            }
+            return true;
+        }
+
+        function updateStats(data) {
+            const distance = data.distance.toFixed(1);
+            const time = data.time.toFixed(0);
+            const intersections = data.intersections;
+            document.getElementById('distance').textContent = `${distance} km`;
+            document.getElementById('time').textContent = `${time} min`;
+            document.getElementById('intersections').textContent = intersections;
+        }
+
+        document.getElementById('find-route').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const startId = parseInt(document.getElementById('start-point').value);
+            const endId = 1;
+            
+            if (!startId || startId === endId) {
+                document.getElementById('alert-box').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('alert-box').style.display = 'none';
+            
+            try {
+                const response = await fetch('/find_route', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ start: startId, end: endId })
+                });
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.success) {
+                    if (highlightPath(data.path)) {
+                        updateStats(data);
+                    }
+                } else {
+                    document.getElementById('alert-box').textContent = data.message;
+                    document.getElementById('alert-box').style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('alert-box').textContent = "An error occurred. Please try again.";
+                document.getElementById('alert-box').style.display = 'block';
+            }
+        });
+
+        document.getElementById('add-traffic').addEventListener('click', async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('alert-box').style.display = 'none';
+            
+            try {
+                const response = await fetch('/add_traffic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.success) {
+                    currentEdges = data.traffic_edges;
+                    initializeMap(); // This will now preserve the selected start point
+                    updateNodeDisplay();
+                } else {
+                    document.getElementById('alert-box').textContent = data.message || "Failed to add traffic";
+                    document.getElementById('alert-box').style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error adding traffic:", error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('alert-box').textContent = "Error adding traffic. Please try again.";
+                document.getElementById('alert-box').style.display = 'block';
+            }
+        });
+
+        document.getElementById('start-point').addEventListener('change', updateNodeDisplay);
+        window.onload = () => {
+            initializeMap();
+            updateNodeDisplay();
+        };
+    </script>
+</body>
+</html>
