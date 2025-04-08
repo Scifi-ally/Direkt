@@ -391,9 +391,8 @@
             const svg = document.getElementById('road-network');
             svg.innerHTML = '';
             
-            // Store the current selected start point before reinitializing
             const startPointSelect = document.getElementById('start-point');
-            const currentStartId = startPointSelect.value || ''; // Default to empty if none selected
+            const currentStartId = startPointSelect.value || '';
             
             currentEdges.forEach(edge => {
                 const fromNode = nodes.find(node => node.id === edge.from);
@@ -430,7 +429,6 @@
                 svg.appendChild(text);
             });
             
-            // Repopulate the select options without resetting the value
             startPointSelect.innerHTML = '<option value="">Select starting point</option>';
             nodes.forEach(node => {
                 if (node.id !== 1) {
@@ -441,8 +439,7 @@
                 }
             });
             
-            // Restore the previously selected start point
-            startPointSelect.value = currentStartId || ''; // Restore or keep empty
+            startPointSelect.value = currentStartId || '';
         }
 
         function selectNode(id) {
@@ -576,7 +573,7 @@
                 
                 if (data.success) {
                     currentEdges = data.traffic_edges;
-                    initializeMap(); // This will now preserve the selected start point
+                    initializeMap();
                     updateNodeDisplay();
                 } else {
                     document.getElementById('alert-box').textContent = data.message || "Failed to add traffic";

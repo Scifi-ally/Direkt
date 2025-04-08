@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, jsonify
 import heapq
 import json
 import random
+import os
 
 app = Flask(__name__)
 
-# Nodes list with Jalandhar-specific names and spaced-out coordinates for display
 nodes = [
     {"id": 1, "name": "Jalandhar Civil Hospital", "x": 300, "y": 100, "type": "hospital"},
     {"id": 2, "name": "Model Town", "x": 450, "y": 150},
@@ -29,7 +29,6 @@ nodes = [
     {"id": 20, "name": "Bus Stand", "x": 450, "y": 700}
 ]
 
-# Edges remain unchanged for calculation purposes
 edges = [
     {"from": 1, "to": 2, "weight": 2.5},
     {"from": 1, "to": 5, "weight": 3.2},
@@ -168,4 +167,5 @@ def add_traffic():
     return jsonify({'success': True, 'traffic_edges': traffic_edges})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
