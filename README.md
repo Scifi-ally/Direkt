@@ -18,5 +18,12 @@ This project is a dynamic web application developed using Flask that determines 
 - Helps emergency services and ambulance drivers find the fastest route to the hospital.
 - Useful for urban planning and traffic management simulations.
 
-Below is the pdf provided for the program
-[Uploading DI-REKT.pdf…]()
+1-
+
+![WhatsApp Image 2025-04-09 at 02 49 00_821c9abc](https://github.com/user-attachments/assets/0bc3c10f-0707-4b4d-aeed-b4debe9f7c39)
+
+2-
+
+![image](https://github.com/user-attachments/assets/8bb659d8-7be3-4f04-801f-3b6491389a63)
+
+
